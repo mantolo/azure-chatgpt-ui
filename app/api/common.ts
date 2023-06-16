@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 export const OPENAI_URL = "api.openai.com";
 const DEFAULT_PROTOCOL = "https";
 const PROTOCOL = process.env.PROTOCOL ?? DEFAULT_PROTOCOL;
-const BASE_URL = process.env.BASE_URL ?? OPENAI_URL;
+const BASE_URL =
+  process.env.BASE_URL ?? process.env.AZURE_OPENAI_API_BASE ?? OPENAI_URL;
 const DISABLE_GPT4 = !!process.env.DISABLE_GPT4;
 
 export async function requestOpenai(req: NextRequest) {
@@ -31,14 +32,16 @@ export async function requestOpenai(req: NextRequest) {
     controller.abort();
   }, 10 * 60 * 1000);
 
-  const fetchUrl = `${baseUrl}/${openaiPath}`;
+  const fetchUrl = `${baseUrl}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=2023-03-15-preview`;
+  console.log("[Full Url]", fetchUrl);
   const fetchOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
-      Authorization: authValue,
-      ...(process.env.OPENAI_ORG_ID && {
-        "OpenAI-Organization": process.env.OPENAI_ORG_ID,
-      }),
+      "api-key": process.env.OPENAI_API_KEY!,
+      // Authorization: authValue,
+      // ...(process.env.OPENAI_ORG_ID && {
+      //   "OpenAI-Organization": process.env.OPENAI_ORG_ID,
+      // }),
     },
     cache: "no-store",
     method: req.method,
@@ -69,6 +72,15 @@ export async function requestOpenai(req: NextRequest) {
       console.error("[OpenAI] gpt4 filter", e);
     }
   }
+
+  // Special handle for special version
+  const clonedBody = await req.text();
+  const jsonBody = JSON.parse(clonedBody);
+  delete jsonBody.model;
+  delete jsonBody.stream;
+  fetchOptions.body = JSON.stringify(jsonBody);
+
+  console.log(fetchOptions.body);
 
   try {
     const res = await fetch(fetchUrl, fetchOptions);

@@ -54,6 +54,18 @@ const ENABLE_GPT4 = true;
 
 export const ALL_MODELS = [
   {
+    name: "chatgpt",
+    available: true,
+  },
+  {
+    name: "chatgpt-4",
+    available: ENABLE_GPT4,
+  },
+  {
+    name: "chatgpt-4-32k",
+    available: ENABLE_GPT4,
+  },
+  {
     name: "gpt-4",
     available: ENABLE_GPT4,
   },

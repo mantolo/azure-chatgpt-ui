@@ -252,9 +252,7 @@ export const useChatStore = create<ChatStore>()(
 
         const systemInfo = createMessage({
           role: "system",
-          content: `IMPORTANT: You are a virtual assistant powered by the ${
-            modelConfig.model
-          } model, now time is ${new Date().toLocaleString()}}`,
+          content: `IMPORTANT: You are a virtual assistant powered by the ${modelConfig.model} model`,
           id: botMessage.id! + 1,
         });
 
@@ -281,7 +279,7 @@ export const useChatStore = create<ChatStore>()(
         console.log("[User Input] ", sendMessages);
         api.llm.chat({
           messages: sendMessages,
-          config: { ...modelConfig, stream: true },
+          config: { ...modelConfig },
           onUpdate(message) {
             botMessage.streaming = true;
             if (message) {
@@ -432,25 +430,25 @@ export const useChatStore = create<ChatStore>()(
           session.topic === DEFAULT_TOPIC &&
           countMessages(messages) >= SUMMARIZE_MIN_LEN
         ) {
-          const topicMessages = messages.concat(
-            createMessage({
-              role: "user",
-              content: Locale.Store.Prompt.Topic,
-            }),
-          );
-          api.llm.chat({
-            messages: topicMessages,
-            config: {
-              model: "gpt-3.5-turbo",
-            },
-            onFinish(message) {
-              get().updateCurrentSession(
-                (session) =>
-                  (session.topic =
-                    message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
-              );
-            },
-          });
+          // const topicMessages = messages.concat(
+          //   createMessage({
+          //     role: "user",
+          //     content: Locale.Store.Prompt.Topic,
+          //   }),
+          // );
+          // api.llm.chat({
+          //   messages: topicMessages,
+          //   config: {
+          //     model: "gpt-3.5-turbo",
+          //   },
+          //   onFinish(message) {
+          //     get().updateCurrentSession(
+          //       (session) =>
+          //         (session.topic =
+          //           message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
+          //     );
+          //   },
+          // });
         }
 
         const modelConfig = session.mask.modelConfig;
@@ -487,24 +485,24 @@ export const useChatStore = create<ChatStore>()(
           historyMsgLength > modelConfig.compressMessageLengthThreshold &&
           modelConfig.sendMemory
         ) {
-          api.llm.chat({
-            messages: toBeSummarizedMsgs.concat({
-              role: "system",
-              content: Locale.Store.Prompt.Summarize,
-              date: "",
-            }),
-            config: { ...modelConfig, stream: true },
-            onUpdate(message) {
-              session.memoryPrompt = message;
-            },
-            onFinish(message) {
-              console.log("[Memory] ", message);
-              session.lastSummarizeIndex = lastSummarizeIndex;
-            },
-            onError(err) {
-              console.error("[Summarize] ", err);
-            },
-          });
+          // api.llm.chat({
+          //   messages: toBeSummarizedMsgs.concat({
+          //     role: "system",
+          //     content: Locale.Store.Prompt.Summarize,
+          //     date: "",
+          //   }),
+          //   config: { ...modelConfig, stream: true },
+          //   onUpdate(message) {
+          //     session.memoryPrompt = message;
+          //   },
+          //   onFinish(message) {
+          //     console.log("[Memory] ", message);
+          //     session.lastSummarizeIndex = lastSummarizeIndex;
+          //   },
+          //   onError(err) {
+          //     console.error("[Summarize] ", err);
+          //   },
+          // });
         }
       },
 
